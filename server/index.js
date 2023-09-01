@@ -1,16 +1,17 @@
 const express = require("express");
+const ejs = require("ejs");
 const bodyparser = require("body-parser");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const dotenv = require("dotenv");
-const ejs = require("ejs");
+
 const app = express();
-const Users = require("./models/Users");
-const Stories = require("./models/Stories");
-const Slides = require("./models/Slides");
 const BookmarkedSlides = require("./models/BookmarkedSlide");
+const Slides = require("./models/Slides");
+const Stories = require("./models/Stories");
+const Users = require("./models/Users");
 
 dotenv.config();
 app.use(cors());
