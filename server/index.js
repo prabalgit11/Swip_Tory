@@ -19,21 +19,18 @@ app.set("view engine", "ejs");
 app.use(express.json());
 app.use(bodyparser.urlencoded({ extended: true }));
 
-//user authenication
+
 
 const isAuthenticated = (req, res, next) => {
     try {
-        // console.log(req.headers.token);
         jwt.verify(req.headers.token, process.env.PRIVATE_KEY);
-        console.log("authenicated");
         next();
     } catch (error) {
-        console.log(error);
         res.json({ error: error });
     }
 };
 
-// get requests
+
 app.get('/', (req, res) => {
     res.send('dont worry ')
 })
@@ -41,7 +38,7 @@ app.get("/health-api", (req, res) => {
     res.json({ message: "all ok no worries!" });
 });
 
-//get the categories
+
 app.get("/api/get-categories", async (req, res) => {
     try {
         const slides = await Slides.find();
@@ -54,10 +51,9 @@ app.get("/api/get-categories", async (req, res) => {
     }
 });
 
-//get slides based on categories
+
 app.get(`/api/slides/`, async (req, res) => {
     let category = req.query.category;
-
     let search = req.query.search || "";
     try {
         let Slide = await Slides.find({
@@ -72,10 +68,9 @@ app.get(`/api/slides/`, async (req, res) => {
     }
 });
 
-//get bookmarked slides of a user
+
 app.get("/api/bookmarksSlides", isAuthenticated, async (req, res) => {
     const { userId } = req.query;
-    // res.send(userId)
     console.log(userId)
     try {
         const slidess = await BookmarkedSlides.find({ userId });
@@ -86,7 +81,7 @@ app.get("/api/bookmarksSlides", isAuthenticated, async (req, res) => {
     }
 });
 
-//to get just slide info
+
 app.get('/api/slideinfo', async (req, res) => {
     const { id } = req.query;
 
@@ -98,7 +93,7 @@ app.get('/api/slideinfo', async (req, res) => {
     }
 })
 
-// to get slide info to edit it
+
 app.get("/api/slide", async (req, res) => {
     try {
         const id = req.query.id;
@@ -115,7 +110,7 @@ app.get("/api/slide", async (req, res) => {
     }
 });
 
-// get your stories
+
 app.get("/api/yourStories", isAuthenticated, async (req, res) => {
     try {
         const user_names = req.query.name;
@@ -135,7 +130,7 @@ app.get("/api/yourStories", isAuthenticated, async (req, res) => {
 
 })
 
-// get user id 
+
 app.get('/api/user_id', async (req, res) => {
     try {
 
@@ -152,7 +147,7 @@ app.get('/api/user_id', async (req, res) => {
     }
 })
 
-// shared-slides
+
 app.get('/api/shared-story-slides', async (req, res) => {
     try {
         const storyId = req.query.storyId;
@@ -167,14 +162,9 @@ app.get('/api/shared-story-slides', async (req, res) => {
 app.post('/api/create-shared-story', async (req, res) => {
     try {
         const { slides } = req.body;
-
-        // Create a new story document to represent the shared story
         const newStory = new Story({
             slides: slides,
-            // You can add more fields here if needed
         });
-
-        // Save the new story to the database
         const savedStory = await newStory.save();
 
         res.status(201).json({ success: true, sharedStoryId: savedStory._id });
@@ -184,9 +174,6 @@ app.post('/api/create-shared-story', async (req, res) => {
     }
 });
 
-// post requests
-
-// sign up request
 
 app.post("/api/register", async (req, res) => {
     const { username, pass_word } = req.body;
@@ -216,7 +203,7 @@ app.post("/api/register", async (req, res) => {
     }
 });
 
-//sign in request
+
 app.post("/api/login", (req, res) => {
     const { username, pass_word } = req.body;
     console.log("hi");
@@ -242,7 +229,7 @@ app.post("/api/login", (req, res) => {
         });
 });
 
-// add story request
+
 
 app.post("/api/addStory", isAuthenticated, async (req, res) => {
     const { user_name } = req.body;
@@ -255,7 +242,6 @@ app.post("/api/addStory", isAuthenticated, async (req, res) => {
     }
 });
 
-//adding slide to database
 
 app.post("/api/addSlide", isAuthenticated, (req, res) => {
     const { heading, description, image_url, categories, story_id } = req.body;
@@ -280,23 +266,20 @@ app.post("/api/addSlide", isAuthenticated, (req, res) => {
         });
 });
 
-// adding bookmarks
+
 
 app.post('/api/bookmarks', async (req, res) => {
     const { userId, slideId } = req.body;
 
     try {
-
         const existingBookmark = await BookmarkedSlides.findOne({ userId, slideId });
-        // console.log(existingBookmark)
 
         if (existingBookmark) {
-
-            await BookmarkedSlides.deleteOne({ userId, slideId }); // Unbookmark slide
+            await BookmarkedSlides.deleteOne({ userId, slideId });
             res.json({ success: true, message: 'Slide unbookmarked' });
         } else {
             const bookmark = new BookmarkedSlides({ userId, slideId });
-            await bookmark.save(); // Bookmark slide
+            await bookmark.save();
             res.json({ success: true, message: 'Slide bookmarked' });
         }
     } catch (error) {
@@ -304,26 +287,23 @@ app.post('/api/bookmarks', async (req, res) => {
     }
 });
 
-//edit likes
+
 app.post('/api/likes', async (req, res) => {
     const { userId, slideId, liked } = req.body;
     console.log(userId, slideId, liked)
     try {
-        // Find the slide by its ID
         const slide = await Slides.findById(slideId);
 
         if (!slide) {
             return res.status(404).json({ error: 'Slide not found' });
         }
 
-        // Update the likes based on the liked status
         if (liked) {
             slide.likes += 1;
         } else {
             slide.likes -= 1;
         }
 
-        // Save the updated slide to the database
         await slide.save();
         return res.json({ success: true });
     } catch (error) {
@@ -333,7 +313,7 @@ app.post('/api/likes', async (req, res) => {
 });
 
 
-// edit products
+
 app.patch("/api/edit-products", async (req, res) => {
     const { _id, heading, description, image_url, category } = req.body;
     try {
